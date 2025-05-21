@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak
+venv.bak
+
+# Databases
+*.db
+*.sqlite3
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Prisma Python Client (generated)
+prisma_py_client/
+# If you have other specific generated files or directories, add them here.
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# dotenv
+.env.*
+!.env.example
