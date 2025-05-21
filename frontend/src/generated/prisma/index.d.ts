@@ -2210,6 +2210,7 @@ export namespace Prisma {
     id: number
     userId: number
     title: number
+    urls: number
     createdAt: number
     _all: number
   }
@@ -2233,6 +2234,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     title?: true
+    urls?: true
     createdAt?: true
     _all?: true
   }
@@ -2313,6 +2315,7 @@ export namespace Prisma {
     id: string
     userId: string
     title: string | null
+    urls: string[]
     createdAt: Date
     _count: ChatCountAggregateOutputType | null
     _min: ChatMinAggregateOutputType | null
@@ -2337,6 +2340,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     title?: boolean
+    urls?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     messages?: boolean | Chat$messagesArgs<ExtArgs>
@@ -2347,6 +2351,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     title?: boolean
+    urls?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chat"]>
@@ -2355,6 +2360,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     title?: boolean
+    urls?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chat"]>
@@ -2363,10 +2369,11 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     title?: boolean
+    urls?: boolean
     createdAt?: boolean
   }
 
-  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "createdAt", ExtArgs["result"]["chat"]>
+  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "title" | "urls" | "createdAt", ExtArgs["result"]["chat"]>
   export type ChatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     messages?: boolean | Chat$messagesArgs<ExtArgs>
@@ -2389,6 +2396,7 @@ export namespace Prisma {
       id: string
       userId: string
       title: string | null
+      urls: string[]
       createdAt: Date
     }, ExtArgs["result"]["chat"]>
     composites: {}
@@ -2818,6 +2826,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Chat", 'String'>
     readonly userId: FieldRef<"Chat", 'String'>
     readonly title: FieldRef<"Chat", 'String'>
+    readonly urls: FieldRef<"Chat", 'String[]'>
     readonly createdAt: FieldRef<"Chat", 'DateTime'>
   }
     
@@ -4344,6 +4353,7 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     title: 'title',
+    urls: 'urls',
     createdAt: 'createdAt'
   };
 
@@ -4497,6 +4507,7 @@ export namespace Prisma {
     id?: StringFilter<"Chat"> | string
     userId?: StringFilter<"Chat"> | string
     title?: StringNullableFilter<"Chat"> | string | null
+    urls?: StringNullableListFilter<"Chat">
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     messages?: MessageListRelationFilter
@@ -4506,6 +4517,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     title?: SortOrderInput | SortOrder
+    urls?: SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
     messages?: MessageOrderByRelationAggregateInput
@@ -4518,6 +4530,7 @@ export namespace Prisma {
     NOT?: ChatWhereInput | ChatWhereInput[]
     userId?: StringFilter<"Chat"> | string
     title?: StringNullableFilter<"Chat"> | string | null
+    urls?: StringNullableListFilter<"Chat">
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     messages?: MessageListRelationFilter
@@ -4527,6 +4540,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     title?: SortOrderInput | SortOrder
+    urls?: SortOrder
     createdAt?: SortOrder
     _count?: ChatCountOrderByAggregateInput
     _max?: ChatMaxOrderByAggregateInput
@@ -4540,6 +4554,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Chat"> | string
     userId?: StringWithAggregatesFilter<"Chat"> | string
     title?: StringNullableWithAggregatesFilter<"Chat"> | string | null
+    urls?: StringNullableListFilter<"Chat">
     createdAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
   }
 
@@ -4661,6 +4676,7 @@ export namespace Prisma {
   export type ChatCreateInput = {
     id?: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutChatsInput
     messages?: MessageCreateNestedManyWithoutChatInput
@@ -4670,6 +4686,7 @@ export namespace Prisma {
     id?: string
     userId: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
     messages?: MessageUncheckedCreateNestedManyWithoutChatInput
   }
@@ -4677,6 +4694,7 @@ export namespace Prisma {
   export type ChatUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutChatsNestedInput
     messages?: MessageUpdateManyWithoutChatNestedInput
@@ -4686,6 +4704,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUncheckedUpdateManyWithoutChatNestedInput
   }
@@ -4694,12 +4713,14 @@ export namespace Prisma {
     id?: string
     userId: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
   }
 
   export type ChatUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4707,6 +4728,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4895,6 +4917,14 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -4914,6 +4944,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     title?: SortOrder
+    urls?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5014,6 +5045,10 @@ export namespace Prisma {
     deleteMany?: ChatScalarWhereInput | ChatScalarWhereInput[]
   }
 
+  export type ChatCreateurlsInput = {
+    set: string[]
+  }
+
   export type UserCreateNestedOneWithoutChatsInput = {
     create?: XOR<UserCreateWithoutChatsInput, UserUncheckedCreateWithoutChatsInput>
     connectOrCreate?: UserCreateOrConnectWithoutChatsInput
@@ -5032,6 +5067,11 @@ export namespace Prisma {
     connectOrCreate?: MessageCreateOrConnectWithoutChatInput | MessageCreateOrConnectWithoutChatInput[]
     createMany?: MessageCreateManyChatInputEnvelope
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  }
+
+  export type ChatUpdateurlsInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type UserUpdateOneRequiredWithoutChatsNestedInput = {
@@ -5196,6 +5236,7 @@ export namespace Prisma {
   export type ChatCreateWithoutUserInput = {
     id?: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
     messages?: MessageCreateNestedManyWithoutChatInput
   }
@@ -5203,6 +5244,7 @@ export namespace Prisma {
   export type ChatUncheckedCreateWithoutUserInput = {
     id?: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
     messages?: MessageUncheckedCreateNestedManyWithoutChatInput
   }
@@ -5240,6 +5282,7 @@ export namespace Prisma {
     id?: StringFilter<"Chat"> | string
     userId?: StringFilter<"Chat"> | string
     title?: StringNullableFilter<"Chat"> | string | null
+    urls?: StringNullableListFilter<"Chat">
     createdAt?: DateTimeFilter<"Chat"> | Date | string
   }
 
@@ -5345,6 +5388,7 @@ export namespace Prisma {
   export type ChatCreateWithoutMessagesInput = {
     id?: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutChatsInput
   }
@@ -5353,6 +5397,7 @@ export namespace Prisma {
     id?: string
     userId: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
   }
 
@@ -5375,6 +5420,7 @@ export namespace Prisma {
   export type ChatUpdateWithoutMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutChatsNestedInput
   }
@@ -5383,18 +5429,21 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatCreateManyUserInput = {
     id?: string
     title?: string | null
+    urls?: ChatCreateurlsInput | string[]
     createdAt?: Date | string
   }
 
   export type ChatUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUpdateManyWithoutChatNestedInput
   }
@@ -5402,6 +5451,7 @@ export namespace Prisma {
   export type ChatUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     messages?: MessageUncheckedUpdateManyWithoutChatNestedInput
   }
@@ -5409,6 +5459,7 @@ export namespace Prisma {
   export type ChatUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: NullableStringFieldUpdateOperationsInput | string | null
+    urls?: ChatUpdateurlsInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

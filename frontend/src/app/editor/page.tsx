@@ -52,6 +52,7 @@ import {
   LinkIcon,
   SendIcon,
   Loader2Icon,
+  MessageSquareText,
 } from "lucide-react";
 
 interface Message {
@@ -334,67 +335,98 @@ export default function EditorPage() {
   return (
     <>
       <div
-        className={`flex h-screen overflow-hidden bg-neutral-900 text-neutral-100`}
+        className={`flex h-screen overflow-hidden bg-neutral-950 text-neutral-100`}
       >
         <aside
           className={`bg-neutral-900 border-r border-neutral-700/60 flex flex-col gap-4 transition-all duration-300 ease-in-out relative ${
-            isSidebarOpen ? "w-72 p-4" : "w-20 p-3 items-center"
+            isSidebarOpen ? "w-72 p-6" : "w-20 p-4 items-center"
           }`}
         >
           <div
             className={`flex items-center ${
               isSidebarOpen ? "justify-between" : "justify-center"
-            } mb-2 w-full`}
+            } mb-4 w-full`}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                {user?.firstName?.charAt(0) || user?.username?.charAt(0) || "A"}
-              </div>
+            <div className="flex items-center gap-3">
               {isSidebarOpen && (
-                <h2 className="text-xl font-semibold text-neutral-100">
-                  AI Doc Agent
+                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-orange-400">
+                  AI Agent
                 </h2>
               )}
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700/50"
+              title={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              {isSidebarOpen ? (
+                <ChevronLeftIcon className="h-5 w-5" />
+              ) : (
+                <ChevronRightIcon className="h-5 w-5" />
+              )}
+            </Button>
           </div>
 
           <Button
             variant="outline"
             onClick={handleNewChat}
-            className={`w-full text-neutral-300 border-neutral-600 hover:bg-neutral-700 hover:text-neutral-100 transition-colors ${
+            className={`w-full text-neutral-300 border-purple-500/70 hover:bg-purple-500/10 hover:text-purple-300 transition-all duration-200 ease-in-out group ${
               !isSidebarOpen &&
               "aspect-square p-0 flex justify-center items-center"
             }`}
             title="New Chat"
           >
-            {isSidebarOpen ? "New Chat" : <PlusIcon className="h-5 w-5" />}
+            {isSidebarOpen ? (
+              <span className="flex items-center justify-center">
+                <PlusIcon className="h-5 w-5 mr-2 group-hover:animate-pulse" /> New Chat
+              </span>
+            ) : (
+              <PlusIcon className="h-6 w-6 group-hover:animate-pulse" />
+            )}
           </Button>
 
           {isSidebarOpen && (
-            <div className="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
-              {chats.map((chat) => (
-                <Card
-                  key={chat.id}
-                  className={`p-2.5 cursor-pointer transition-colors duration-150 rounded-md ${
-                    selectedChatId === chat.id
-                      ? "bg-primary/20 border-primary/50 text-primary-foreground shadow-md"
-                      : "bg-neutral-800/70 border-neutral-700 hover:bg-neutral-700/90 text-neutral-300 hover:text-neutral-100"
-                  }`}
-                  onClick={() => handleSelectChat(chat)}
-                >
+            <p className="text-xs text-neutral-500 px-1 mt-1 mb-0">
+              Your recent conversations.
+            </p>
+          )}
+
+          <div
+            className={`flex-grow overflow-y-auto space-y-2 pr-0.5 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50 ${
+              !isSidebarOpen && "mt-2"
+            }`}
+          >
+            {chats.map((chat) => (
+              <Card
+                key={chat.id}
+                className={`p-2.5 cursor-pointer transition-all duration-200 ease-in-out rounded-lg shadow-sm hover:shadow-md ${
+                  selectedChatId === chat.id
+                    ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-orange-600/30 border-purple-500/80 text-neutral-50 ring-2 ring-purple-500/70"
+                    : "bg-neutral-800/80 border-neutral-700/70 hover:bg-neutral-700/90 text-neutral-300 hover:text-neutral-100 hover:border-neutral-600"
+                } ${
+                  !isSidebarOpen && "p-0 aspect-square flex items-center justify-center"
+                }`}
+                onClick={() => {
+                  handleSelectChat(chat);
+                  if (!isSidebarOpen) setIsSidebarOpen(true); // Open sidebar on chat select if closed
+                }}
+                title={chat.title || "Untitled Chat"}
+              >
+                {isSidebarOpen ? (
                   <div className="flex justify-between items-center">
                     <span
                       className={`text-sm font-medium truncate ${
                         selectedChatId === chat.id
-                          ? "text-neutral-100"
+                          ? "text-neutral-50"
                           : "text-neutral-300"
                       }`}
-                      title={chat.title || "Untitled Chat"}
                     >
-                      {chat.title?.slice(0, 22) || "Untitled Chat"}
-                      {chat.title && chat.title.length > 22 ? "..." : ""}
+                      {chat.title?.slice(0, 20) || "Untitled Chat"}
+                      {chat.title && chat.title.length > 20 ? "..." : ""}
                     </span>
-                    <div className="flex items-center space-x-0.5">
+                    <div className="flex items-center space-x-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
                       <Sheet>
                         <SheetTrigger asChild>
                           <Button
@@ -402,7 +434,7 @@ export default function EditorPage() {
                             variant="ghost"
                             className={`h-7 w-7 rounded-md hover:bg-neutral-700/50 ${
                               selectedChatId === chat.id
-                                ? "text-neutral-100"
+                                ? "text-neutral-200 hover:text-neutral-50"
                                 : "text-neutral-400 hover:text-neutral-100"
                             }`}
                             title="Rename chat"
@@ -416,9 +448,9 @@ export default function EditorPage() {
                         </SheetTrigger>
                         <SheetContent
                           side="bottom"
-                          className="p-6 rounded-t-lg sm:max-w-lg mx-auto bg-neutral-850 border-neutral-700 text-neutral-100 shadow-xl"
+                          className="p-6 rounded-t-lg sm:max-w-lg mx-auto bg-neutral-900 border-neutral-700 text-neutral-100 shadow-2xl"
                         >
-                          <SheetTitle className="text-neutral-50 text-lg">
+                          <SheetTitle className="text-neutral-50 text-lg font-semibold">
                             Rename Chat
                           </SheetTitle>
                           <SheetDescription className="mt-1 mb-4 text-sm text-neutral-400">
@@ -428,18 +460,19 @@ export default function EditorPage() {
                             placeholder="Enter new chat title"
                             value={renameInput}
                             onChange={(e) => setRenameInput(e.target.value)}
-                            className="mb-4 bg-neutral-700 border-neutral-600 text-neutral-100 placeholder:text-neutral-500 focus:border-primary focus:ring-primary/50"
+                            className="mb-4 bg-neutral-800 border-neutral-600 text-neutral-100 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-md"
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && renameInput.trim()) {
                                 handleRenameChat(chat.id, renameInput);
+                                // Consider closing sheet here if desired: document.querySelector('[data-radix-sheet-close]')?.click();
                               }
                             }}
                           />
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-3">
                             <SheetClose asChild>
                               <Button
                                 variant="outline"
-                                className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
+                                className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 rounded-md"
                               >
                                 Cancel
                               </Button>
@@ -450,7 +483,7 @@ export default function EditorPage() {
                                   handleRenameChat(chat.id, renameInput)
                                 }
                                 disabled={!renameInput.trim()}
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                className="bg-purple-600 hover:bg-purple-700 text-white rounded-md"
                               >
                                 Save Changes
                               </Button>
@@ -463,9 +496,9 @@ export default function EditorPage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className={`h-7 w-7 rounded-md hover:bg-destructive/20 hover:text-destructive ${
+                            className={`h-7 w-7 rounded-md hover:bg-red-500/20 hover:text-red-400 ${
                               selectedChatId === chat.id
-                                ? "text-neutral-100"
+                                ? "text-neutral-200 hover:text-red-400"
                                 : "text-neutral-400"
                             }`}
                             title="Delete chat"
@@ -474,22 +507,22 @@ export default function EditorPage() {
                             <Trash2Icon className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-neutral-850 border-neutral-700 text-neutral-100 shadow-xl">
-                          <AlertDialogTitle className="text-neutral-50 text-lg">
+                        <AlertDialogContent className="bg-neutral-900 border-neutral-700 text-neutral-100 shadow-2xl rounded-lg">
+                          <AlertDialogTitle className="text-neutral-50 text-lg font-semibold">
                             Confirm Deletion
                           </AlertDialogTitle>
                           <p className="text-sm text-neutral-400 mt-2">
                             Are you sure you want to delete the chat: &quot;
-                            {chat.title || "Untitled Chat"}&quot;? This action
+                            <span className="font-semibold text-neutral-300">{chat.title || "Untitled Chat"}</span>&quot;? This action
                             cannot be undone.
                           </p>
-                          <div className="flex justify-end gap-2 mt-4">
-                            <AlertDialogCancel className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100">
+                          <div className="flex justify-end gap-3 mt-5">
+                            <AlertDialogCancel className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 rounded-md">
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDeleteChat(chat.id)}
-                              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                              className="bg-red-600 hover:bg-red-700 text-white rounded-md"
                             >
                               Delete Chat
                             </AlertDialogAction>
@@ -498,199 +531,201 @@ export default function EditorPage() {
                       </AlertDialog>
                     </div>
                   </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          <div
-            className={`mt-auto border-t border-neutral-700/60 pt-4 w-full flex ${
-              isSidebarOpen
-                ? "items-center justify-between"
-                : "flex-col items-center gap-3"
-            }`}
-          >
-            <div
-              className={`${!isSidebarOpen && "flex justify-center w-full"}`}
-            >
-              <UserButton afterSignOutUrl="/" />
-            </div>
-            <SignOutButton>
-              <Button
-                variant="ghost"
-                size={isSidebarOpen ? "sm" : "icon"}
-                className={`text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700/70 transition-colors ${
-                  !isSidebarOpen &&
-                  "p-1 aspect-square flex justify-center items-center"
-                }`}
-                title="Sign Out"
-              >
-                <LogOutIcon
-                  className={`${isSidebarOpen ? "mr-2" : ""} h-4 w-4`}
-                />
-                {isSidebarOpen && "Sign Out"}
-              </Button>
-            </SignOutButton>
+                ) : (
+                  // Collapsed sidebar: Show first letter of chat title or a generic icon
+                  <span className="text-sm font-bold text-neutral-400 group-hover:text-neutral-100">
+                    {chat.title?.charAt(0).toUpperCase() || "C"}
+                  </span>
+                )}
+              </Card>
+            ))}
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-neutral-700 hover:bg-neutral-600 border border-neutral-500 text-neutral-300 hover:text-neutral-100 rounded-full h-6 w-6 z-20 flex items-center justify-center shadow-md transition-colors"
-            title={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            {isSidebarOpen ? (
-              <ChevronLeftIcon className="h-4 w-4" />
-            ) : (
-              <ChevronRightIcon className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="mt-auto pt-4 border-t border-neutral-700/60 w-full">
+            <div
+              className={`flex items-center gap-3 ${
+                isSidebarOpen ? "justify-start" : "justify-center flex-col"
+              }`}
+            >
+              <UserButton afterSignOutUrl="/" />
+              {isSidebarOpen && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-neutral-200 truncate max-w-[120px]">
+                    {user?.firstName || user?.username}
+                  </span>
+                  <SignOutButton>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-neutral-400 hover:text-red-400 p-0 h-auto text-xs justify-start"
+                    >
+                      <LogOutIcon className="h-3 w-3 mr-1.5" /> Sign Out
+                    </Button>
+                  </SignOutButton>
+                </div>
+              )}
+            </div>
+          </div>
         </aside>
 
-        <main className="flex-1 flex flex-col bg-neutral-850 overflow-hidden">
-          <div
-            ref={chatRef}
-            className="flex-1 overflow-y-auto p-6 space-y-4 bg-neutral-950 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-850"
-          >
-            {messages.length === 0 && (
-              <div className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center h-full">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {urls.length === 0 ? (
-                    <>
-                      <LinkIcon className="h-12 w-12 text-neutral-600 mb-4" />
-                      <p className="text-lg">No URLs added yet.</p>
-                      <p>Add some documentation URLs to get started.</p>
-                    </>
-                  ) : selectedChatId ? (
-                    <>
-                      <SendIcon className="h-12 w-12 text-neutral-600 mb-4" />
-                      <p className="text-lg">No messages in this chat yet.</p>
-                      <p>
-                        Ask a question about the content from the added URL(s).
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon className="h-12 w-12 text-neutral-600 mb-4" />
-                      <p className="text-lg">Ready to analyze!</p>
-                      <p>Ask a question, or add more URLs.</p>
-                    </>
-                  )}
-                </motion.div>
+        {/* Main Chat Area */}
+        <main className="flex-1 flex flex-col h-screen bg-neutral-950 overflow-hidden">
+          {/* Header for URL inputs */}
+          <header className="p-4 border-b border-neutral-800/80 bg-neutral-900 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <LinkIcon className="h-5 w-5 text-purple-400" />
+              <h2 className="text-lg font-semibold text-neutral-200">
+                Manage Document URLs
+              </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="url"
+                placeholder="Enter document URL (e.g., https://example.com/doc.pdf)"
+                value={currentUrlInput}
+                onChange={(e) => setCurrentUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
+                className="flex-grow bg-neutral-800 border-neutral-700 text-neutral-200 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-md shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={loading || (!!selectedChatId && messages.length > 0)}
+              />
+              <Button
+                onClick={handleAddUrl}
+                disabled={!currentUrlInput.trim() || loading || (!!selectedChatId && messages.length > 0)}
+                className="bg-purple-600 hover:bg-purple-700 text-white rounded-md shadow-sm disabled:opacity-60"
+              >
+                <PlusIcon className="h-5 w-5 mr-1.5" /> Add URL
+              </Button>
+            </div>
+            {urls.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                {urls.map((url, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-between p-2 bg-neutral-800/70 rounded-md border border-neutral-700/60 text-sm"
+                  >
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-400 hover:text-purple-300 hover:underline truncate flex-1 mr-2"
+                      title={url}
+                    >
+                      {url}
+                    </a>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleRemoveUrl(url)}
+                      disabled={loading || (!!selectedChatId && messages.length > 0)}
+                      className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7 disabled:opacity-50"
+                      title="Remove URL"
+                    >
+                      <Trash2Icon className="h-4 w-4" />
+                    </Button>
+                  </motion.div>
+                ))}
               </div>
             )}
-            {messages.map((msg, i) => (
+            {urls.length === 0 && !loading && (
+              <p className="text-xs text-neutral-500 mt-2.5">
+                Add at least one URL to start chatting.
+              </p>
+            )}
+          </header>
+
+          {/* Chat messages area */}
+          <div
+            ref={chatRef}
+            className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50"
+          >
+            {messages.map((msg, index) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 className={`flex ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <div
-                  className={`px-4 py-2.5 rounded-xl shadow-sm max-w-[75%] break-words ${
+                <Card
+                  className={`max-w-xl lg:max-w-2xl p-3.5 rounded-xl shadow-md ${
                     msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-none"
-                      : "bg-neutral-700 text-neutral-100 rounded-bl-none"
+                      ? "bg-purple-600/90 text-neutral-50 rounded-br-none"
+                      : "bg-neutral-800 text-neutral-200 rounded-bl-none border border-neutral-700/80"
                   }`}
                 >
-                  <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-relaxed">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
                     {msg.content}
-                  </pre>
-                </div>
+                  </p>
+                </Card>
               </motion.div>
             ))}
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-start"
+              >
+                <Card className="max-w-xl lg:max-w-2xl p-3.5 rounded-xl shadow-md bg-neutral-800 text-neutral-200 rounded-bl-none border border-neutral-700/80">
+                  <div className="flex items-center">
+                    <Loader2Icon className="h-5 w-5 text-purple-400 animate-spin mr-2.5" />
+                    <p className="text-sm text-neutral-400">
+                      AI is thinking...
+                    </p>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+            {messages.length === 0 && !loading && urls.length > 0 && (
+              <div className="text-center text-neutral-500 pt-10">
+                <MessageSquareText size={48} className="mx-auto mb-3 opacity-50" />
+                <p className="text-lg">
+                  Ready to answer your questions about the provided documents.
+                </p>
+                <p className="text-sm">
+                  Type your query below to get started.
+                </p>
+              </div>
+            )}
+            {messages.length === 0 && !loading && urls.length === 0 && (
+              <div className="text-center text-neutral-500 pt-10">
+                <LinkIcon size={48} className="mx-auto mb-3 opacity-50" />
+                <p className="text-lg">
+                  Please add at least one document URL above.
+                </p>
+                <p className="text-sm">
+                  Once URLs are added, you can ask questions about their content.
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="border-t border-neutral-700/60 p-4 bg-neutral-900 space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <LinkIcon className="h-5 w-5 text-neutral-500 flex-shrink-0" />
-                <Input
-                  className="flex-1 bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 focus:border-primary ring-offset-neutral-900 transition-colors"
-                  placeholder="Add documentation URL (e.g., https://docs.example.com)"
-                  value={currentUrlInput}
-                  onChange={(e) => setCurrentUrlInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && currentUrlInput.trim()) {
-                      handleAddUrl();
-                    }
-                  }}
-                  disabled={
-                    loading ||
-                    (!!selectedChatId && messages.length > 0 && urls.length > 0)
-                  }
-                />
-                <Button
-                  onClick={handleAddUrl}
-                  disabled={
-                    loading ||
-                    !currentUrlInput.trim() ||
-                    (!!selectedChatId && messages.length > 0 && urls.length > 0)
-                  }
-                  variant="outline"
-                  className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 transition-colors"
-                >
-                  Add URL
-                </Button>
-              </div>
-              {urls.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-2 bg-neutral-800/50 rounded-md border border-neutral-700/60">
-                  {urls.map((u, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      layout
-                      className="flex items-center gap-1.5 bg-neutral-700 text-neutral-200 text-xs px-2.5 py-1 rounded-full shadow-sm"
-                    >
-                      <span className="truncate max-w-xs" title={u}>
-                        {u}
-                      </span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleRemoveUrl(u)}
-                        className="h-5 w-5 text-neutral-400 hover:text-red-400 hover:bg-neutral-600 rounded-full p-0.5 transition-colors"
-                        disabled={
-                          loading || (!!selectedChatId && messages.length > 0)
-                        }
-                        title="Remove URL"
-                      >
-                        <Trash2Icon className="h-3.5 w-3.5" />
-                      </Button>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
+          {/* Input area */}
+          <footer className="p-4 border-t border-neutral-800/80 bg-neutral-900">
+            <div className="flex items-center gap-3 max-w-4xl mx-auto">
               <Input
-                className="flex-1 bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 focus:border-primary ring-offset-neutral-900 transition-colors"
                 placeholder={
                   urls.length === 0
-                    ? "Add URL(s) first to ask a question"
-                    : "Ask a question about the content from the URL(s)..."
+                    ? "Add URLs above to enable chat"
+                    : "Ask a question about the document(s)..."
                 }
                 value={input}
                 onChange={(e) => dispatch(setInput(e.target.value))}
-                onKeyDown={(e) => e.key === "Enter" && !loading && handleSend()}
-                disabled={loading || urls.length === 0}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                className="flex-grow bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-lg shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={urls.length === 0 || loading}
               />
               <Button
                 onClick={handleSend}
-                disabled={loading || !input.trim() || urls.length === 0}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 transition-colors shadow-md"
-                aria-label="Send message"
+                disabled={!input.trim() || urls.length === 0 || loading}
+                className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-sm px-5 py-2.5 disabled:opacity-60"
+                title="Send Message"
               >
                 {loading ? (
                   <Loader2Icon className="h-5 w-5 animate-spin" />
@@ -699,7 +734,7 @@ export default function EditorPage() {
                 )}
               </Button>
             </div>
-          </div>
+          </footer>
         </main>
       </div>
     </>
