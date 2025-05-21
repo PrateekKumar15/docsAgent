@@ -10,8 +10,9 @@ generator client {
 }
 
 generator pyclient {
-  provider = "prisma-client-py"
-  output   = "../../prisma_py_client" // Corrected path to project root
+  provider             = "prisma-client-py"
+  output               = "c:/Users/prate/OneDrive/Desktop/Web D/Agentic Ai/prisma_py_client" // Using absolute path with forward slashes
+  recursive_type_depth = -1 // Recommended for Pyright, enables full recursive types
 }
 
 datasource db {
@@ -33,6 +34,7 @@ model Chat {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   title     String?
+  urls      String[] @default([]) // Added to store multiple URLs
   messages  Message[]
   createdAt DateTime @default(now())
 }
