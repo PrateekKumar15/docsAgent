@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import { Zap } from "lucide-react"; // Using Zap as a placeholder for a sleek logo icon
-
+// import { Zap } from "lucide-react"; // Using Zap as a placeholder for a sleek logo icon
+import Image from "next/image"; // Importing Image for logo rendering
 export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 w-full flex items-center justify-between px-6 sm:px-8 md:px-12 py-4 bg-neutral-950/90 backdrop-blur-lg text-neutral-200 shadow-md border-b border-neutral-800/70">
       <div className="flex items-center gap-3 sm:gap-4">
         <Link
           href="/"
-          className="flex items-center gap-2 font-bold text-xl sm:text-2xl hover:text-primary transition-colors duration-200"
+          className="flex items-center gap-2 font-bold text-xl text-foreground/700 sm:text-2xl hover:text-foreground/900 transition-colors duration-200"
         >
-          <Zap className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+          <Image
+            src="/ai_doc_agent_icon.svg" // Replace with your logo path
+            alt="AI Doc Agent Logo"
+            width={32}
+            height={32}
+            className="h-12 w-12 rounded-full bg-neutral-800 p-1"
+          />
           <span>AI Doc Agent</span>
         </Link>
       </div>

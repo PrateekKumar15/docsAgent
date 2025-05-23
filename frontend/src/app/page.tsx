@@ -8,11 +8,12 @@ import { motion, useAnimation, useInView, AnimatePresence, useScroll, useTransfo
 import { useRef, useEffect, useState } from "react";
 import { Zap, Brain, MessageSquare, History, ShieldCheck, Users, ChevronRight, Star, Code, Cloud } from "lucide-react";
 import Marquee from "react-fast-marquee";
+import Image from "next/image";
 
 function HeroAnimatedIcon() {
   return (
     <motion.div 
-      className="relative w-24 h-24 sm:w-32 sm:h-32"
+      className="relative w-24 h-24 sm:w-32 sm:h-32 overflow-hidden "
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.6 }}
@@ -27,7 +28,9 @@ function HeroAnimatedIcon() {
         animate={{ rotate: -360 }}
         transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: 0.5 }}
       />
-      <Zap className="absolute inset-0 m-auto h-1/2 w-1/2 text-orange-400" />
+      {/* <Zap className="absolute inset-0 m-auto h-1/2 w-1/2 text-orange-400" /> */}
+      <Image alt="logo" src="/ai_doc_agent_icon.svg" width={100} height={100}
+       className="absolute inset-0 m-auto  overflow-hidden rounded-full"></Image>
     </motion.div>
   );
 }
@@ -258,7 +261,7 @@ export default function Home() {
               </motion.div>
             </div>
             <motion.div 
-              className="md:w-1/2 mt-10 md:mt-0 flex justify-center items-center"
+              className="md:w-1/2 h-1/2 mt-10 md:mt-0 flex overflow-hidden rounded-full justify-center items-center"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5, duration: 0.8, type: "spring" }}

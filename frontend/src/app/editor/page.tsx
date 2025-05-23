@@ -42,6 +42,8 @@ import {
   deleteChat as deleteChatAction,
   resetEditor,
 } from "@/slices/editorSlice";
+import { startLoading, stopLoading } from "@/slices/uiSlice";
+
 import {
   MenuIcon,
   LogOutIcon,
@@ -76,7 +78,7 @@ export default function EditorPage() {
   );
   const urls = useSelector((state: RootState) => state.editor.urls);
   const input = useSelector((state: RootState) => state.editor.input);
-  const loading = useSelector((state: RootState) => state.editor.loading);
+  const localLoading = useSelector((state: RootState) => state.editor.loading); // Renamed to localLoading
   const chatRef = useRef<HTMLDivElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [renameInput, setRenameInput] = useState("");
@@ -84,6 +86,7 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (!isSignedIn || !user) return;
+    dispatch(startLoading()); // Start global loader
     fetch(`http://127.0.0.1:8000/api/users/${user.id}/chats`)
       .then((res) => {
         if (!res.ok) {
@@ -99,25 +102,17 @@ export default function EditorPage() {
       .then((chatsArray: Chat[]) => {
         if (chatsArray && chatsArray.length > 0) {
           dispatch(setChats(chatsArray));
-          const lastChat = chatsArray[0];
-          dispatch(setSelectedChatId(lastChat.id));
-          const chatUrls = lastChat.urls || [];
-          dispatch(setUrls(chatUrls));
-          dispatch(
-            setMessages(
-              lastChat.messages.map((m: Message) => ({
-                role: m.role,
-                content: m.content,
-              }))
-            )
-          );
-        } else {
-          dispatch(resetEditor());
         }
-      })
-      .catch((error) => {
-        console.error("Failed to fetch chats:", error.message);
+        // Always reset to a new chat state after fetching (or if no chats/error)
         dispatch(resetEditor());
+      })
+      .catch((error: Error) => {
+        // Added type for error
+        console.error("Failed to fetch chats:", error.message);
+        dispatch(resetEditor()); // Reset to new chat on error
+      })
+      .finally(() => {
+        dispatch(stopLoading()); // Stop global loader
       });
   }, [isSignedIn, user, dispatch]);
 
@@ -155,6 +150,7 @@ export default function EditorPage() {
       console.error("User not available or title is empty for renaming chat.");
       return;
     }
+    dispatch(startLoading());
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/chats/${chatId}/rename`,
@@ -182,6 +178,8 @@ export default function EditorPage() {
       );
     } catch (error) {
       console.error("Error renaming chat:", error);
+    } finally {
+      dispatch(stopLoading());
     }
   };
 
@@ -190,6 +188,7 @@ export default function EditorPage() {
       console.error("User not available for deleting chat.");
       return;
     }
+    dispatch(startLoading());
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/chats/${chatId}`,
@@ -219,6 +218,8 @@ export default function EditorPage() {
       }
     } catch (error) {
       console.error("Error deleting chat:", error);
+    } finally {
+      dispatch(stopLoading());
     }
   };
 
@@ -248,10 +249,13 @@ export default function EditorPage() {
 
   const handleSend = async () => {
     if (!input.trim() || urls.length === 0 || !user) return;
-    dispatch(setLoading(true));
-    dispatch(addMessage({ role: "user", content: input }));
+    dispatch(setLoading(true)); // Use local loading state for AI response
     const currentInput = input;
+    dispatch(addMessage({ role: "user", content: currentInput }));
     dispatch(setInput(""));
+
+    let accumulatedResponse = "";
+    let currentAiMessageId: string | null = null; // To update the AI message as it streams
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/chat", {
@@ -264,44 +268,182 @@ export default function EditorPage() {
           chatId: selectedChatId,
         }),
       });
-      const data = await res.json();
 
-      if (res.ok) {
-        dispatch(addMessage({ role: "ai", content: data.answer }));
-
-        if (data.chat) {
-          const serverChat = data.chat as Chat;
-          if (!selectedChatId || selectedChatId !== serverChat.id) {
-            dispatch(addChat(serverChat));
-            dispatch(setSelectedChatId(serverChat.id));
-          } else {
-            const existingChatIndex = chats.findIndex(
-              (c) => c.id === serverChat.id
-            );
-            if (existingChatIndex !== -1) {
-              const updatedChats = [...chats];
-              updatedChats[existingChatIndex] = serverChat;
-              dispatch(setChats(updatedChats));
-            } else {
-              dispatch(addChat(serverChat));
-            }
-          }
-        }
-      } else {
+      if (!res.ok) {
+        const errorData = await res.json(); // Try to parse error if not streaming
+        console.error("Error sending message:", errorData.error);
         dispatch(
           addMessage({
             role: "ai",
-            content: data.error || "Error: Could not get answer.",
+            content: errorData.error || "Error: Could not get answer.",
           })
+        );
+        dispatch(setLoading(false));
+        return;
+      }
+
+      if (!res.body) {
+        throw new Error("Response body is null");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      // Add a placeholder for the AI message that will be updated
+      const tempAiMessage = { role: "ai" as const, content: "" };
+      dispatch(addMessage(tempAiMessage));
+
+      let streamEnded = false;
+
+      while (!done && !streamEnded) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        const chunk = decoder.decode(value, { stream: true });
+
+        // Check for special metadata marker
+        const metadataMarker = "__CHAT_METADATA__";
+        if (chunk.includes(metadataMarker)) {
+          const parts = chunk.split(metadataMarker);
+          const actualChunkContent = parts[0];
+          const metadataJson = parts[1];
+
+          if (actualChunkContent) {
+            accumulatedResponse += actualChunkContent;
+            dispatch(
+              setMessages(
+                messages.map((msg, index) =>
+                  index === messages.length // Update the last message (our placeholder)
+                    ? { ...msg, content: accumulatedResponse }
+                    : msg
+                )
+              )
+            );
+          }
+
+          if (metadataJson) {
+            try {
+              const chatData = JSON.parse(metadataJson);
+              if (chatData.error) {
+                console.error("Error from stream metadata:", chatData.error);
+                // Update the last AI message with the error
+                dispatch(
+                  setMessages(
+                    messages.map((msg, index) =>
+                      index === messages.length
+                        ? {
+                            ...msg,
+                            content: chatData.error || "Error from AI.",
+                          }
+                        : msg
+                    )
+                  )
+                );
+              } else if (chatData.id) {
+                const serverChat = chatData as Chat;
+                if (!selectedChatId || selectedChatId !== serverChat.id) {
+                  dispatch(addChat(serverChat));
+                  dispatch(setSelectedChatId(serverChat.id));
+                } else {
+                  const existingChatIndex = chats.findIndex(
+                    (c) => c.id === serverChat.id
+                  );
+                  if (existingChatIndex !== -1) {
+                    const updatedChats = [...chats];
+                    updatedChats[existingChatIndex] = serverChat;
+                    dispatch(setChats(updatedChats));
+                  } else {
+                    dispatch(addChat(serverChat));
+                  }
+                }
+                // Update the final AI message content from the potentially completed accumulatedResponse
+                dispatch(
+                  setMessages(
+                    messages.map((msg, index) =>
+                      index === messages.length
+                        ? { ...msg, content: accumulatedResponse }
+                        : msg
+                    )
+                  )
+                );
+              }
+            } catch (e) {
+              console.error("Failed to parse chat metadata from stream:", e);
+              // Update the last AI message with a parsing error
+              dispatch(
+                setMessages(
+                  messages.map((msg, index) =>
+                    index === messages.length
+                      ? {
+                          ...msg,
+                          content:
+                            accumulatedResponse + "\n[Error parsing chat data]",
+                        }
+                      : msg
+                  )
+                )
+              );
+            }
+          }
+          streamEnded = true; // Stop processing further chunks after metadata
+          break; // Exit loop once metadata is processed
+        } else {
+          // Normal chunk processing
+          accumulatedResponse += chunk;
+          // Update the last message in the messages array (which should be the AI's message)
+          // This creates the letter-by-letter effect
+          dispatch(
+            setMessages(
+              messages.map((msg, index) =>
+                index === messages.length
+                  ? { ...msg, content: accumulatedResponse }
+                  : msg
+              )
+            )
+          );
+        }
+      }
+
+      // Final check if stream ended without metadata but with content
+      if (!streamEnded && accumulatedResponse.startsWith("Error:")) {
+        dispatch(
+          setMessages(
+            messages.map((msg, index) =>
+              index === messages.length
+                ? { ...msg, content: accumulatedResponse }
+                : msg
+            )
+          )
+        );
+      } else if (!streamEnded && !accumulatedResponse) {
+        // Handle case where stream ends, no metadata, and no content (e.g. empty AI response)
+        dispatch(
+          setMessages(
+            messages.map((msg, index) =>
+              index === messages.length
+                ? { ...msg, content: "AI returned an empty response." }
+                : msg
+            )
+          )
         );
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error sending message or processing stream:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Error: Could not get answer.";
+      // Update the last AI message with the error, or add a new one if placeholder wasn't added
       dispatch(
-        addMessage({ role: "ai", content: "Error: Could not get answer." })
+        setMessages(
+          messages.map((msg, index) =>
+            index === messages.length
+              ? { ...msg, content: errorMessage }
+              : msg
+          )
+        )
       );
+    } finally {
+      dispatch(setLoading(false)); // Stop local loading
     }
-    dispatch(setLoading(false));
   };
 
   if (!isSignedIn) {
@@ -380,7 +522,8 @@ export default function EditorPage() {
           >
             {isSidebarOpen ? (
               <span className="flex items-center justify-center">
-                <PlusIcon className="h-5 w-5 mr-2 group-hover:animate-pulse" /> New Chat
+                <PlusIcon className="h-5 w-5 mr-2 group-hover:animate-pulse" />{" "}
+                New Chat
               </span>
             ) : (
               <PlusIcon className="h-6 w-6 group-hover:animate-pulse" />
@@ -406,7 +549,8 @@ export default function EditorPage() {
                     ? "bg-gradient-to-r from-purple-600/30 via-pink-600/30 to-orange-600/30 border-purple-500/80 text-neutral-50 ring-2 ring-purple-500/70"
                     : "bg-neutral-800/80 border-neutral-700/70 hover:bg-neutral-700/90 text-neutral-300 hover:text-neutral-100 hover:border-neutral-600"
                 } ${
-                  !isSidebarOpen && "p-0 aspect-square flex items-center justify-center"
+                  !isSidebarOpen &&
+                  "p-0 aspect-square flex items-center justify-center"
                 }`}
                 onClick={() => {
                   handleSelectChat(chat);
@@ -513,8 +657,10 @@ export default function EditorPage() {
                           </AlertDialogTitle>
                           <p className="text-sm text-neutral-400 mt-2">
                             Are you sure you want to delete the chat: &quot;
-                            <span className="font-semibold text-neutral-300">{chat.title || "Untitled Chat"}</span>&quot;? This action
-                            cannot be undone.
+                            <span className="font-semibold text-neutral-300">
+                              {chat.title || "Untitled Chat"}
+                            </span>
+                            &quot;? This action cannot be undone.
                           </p>
                           <div className="flex justify-end gap-3 mt-5">
                             <AlertDialogCancel className="border-neutral-600 text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 rounded-md">
@@ -586,11 +732,15 @@ export default function EditorPage() {
                 onChange={(e) => setCurrentUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
                 className="flex-grow bg-neutral-800 border-neutral-700 text-neutral-200 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-md shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                disabled={loading || (!!selectedChatId && messages.length > 0)}
+                disabled={localLoading || (!!selectedChatId && messages.length > 0)}
               />
               <Button
                 onClick={handleAddUrl}
-                disabled={!currentUrlInput.trim() || loading || (!!selectedChatId && messages.length > 0)}
+                disabled={
+                  !currentUrlInput.trim() ||
+                  localLoading ||
+                  (!!selectedChatId && messages.length > 0)
+                }
                 className="bg-purple-600 hover:bg-purple-700 text-white rounded-md shadow-sm disabled:opacity-60"
               >
                 <PlusIcon className="h-5 w-5 mr-1.5" /> Add URL
@@ -620,7 +770,9 @@ export default function EditorPage() {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleRemoveUrl(url)}
-                      disabled={loading || (!!selectedChatId && messages.length > 0)}
+                      disabled={
+                        localLoading || (!!selectedChatId && messages.length > 0)
+                      }
                       className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7 disabled:opacity-50"
                       title="Remove URL"
                     >
@@ -630,17 +782,20 @@ export default function EditorPage() {
                 ))}
               </div>
             )}
-            {urls.length === 0 && !loading && (
-              <p className="text-xs text-neutral-500 mt-2.5">
-                Add at least one URL to start chatting.
-              </p>
-            )}
+            {/* Conditional prompt to add URLs */}
+            {urls.length === 0 &&
+              !localLoading &&
+              (!selectedChatId || messages.length === 0) && (
+                <p className="text-xs text-neutral-500 mt-2.5">
+                  Add at least one URL to start chatting.
+                </p>
+              )}
           </header>
 
           {/* Chat messages area */}
           <div
             ref={chatRef}
-            className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800/50"
+            className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide" // Applied scrollbar-hide
           >
             {messages.map((msg, index) => (
               <motion.div
@@ -665,7 +820,7 @@ export default function EditorPage() {
                 </Card>
               </motion.div>
             ))}
-            {loading && (
+            {localLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -682,25 +837,27 @@ export default function EditorPage() {
                 </Card>
               </motion.div>
             )}
-            {messages.length === 0 && !loading && urls.length > 0 && (
+            {messages.length === 0 && !localLoading && urls.length > 0 && (
               <div className="text-center text-neutral-500 pt-10">
-                <MessageSquareText size={48} className="mx-auto mb-3 opacity-50" />
+                <MessageSquareText
+                  size={48}
+                  className="mx-auto mb-3 opacity-50"
+                />
                 <p className="text-lg">
                   Ready to answer your questions about the provided documents.
                 </p>
-                <p className="text-sm">
-                  Type your query below to get started.
-                </p>
+                <p className="text-sm">Type your query below to get started.</p>
               </div>
             )}
-            {messages.length === 0 && !loading && urls.length === 0 && (
+            {messages.length === 0 && !localLoading && urls.length === 0 && (
               <div className="text-center text-neutral-500 pt-10">
                 <LinkIcon size={48} className="mx-auto mb-3 opacity-50" />
                 <p className="text-lg">
                   Please add at least one document URL above.
                 </p>
                 <p className="text-sm">
-                  Once URLs are added, you can ask questions about their content.
+                  Once URLs are added, you can ask questions about their
+                  content.
                 </p>
               </div>
             )}
@@ -719,15 +876,15 @@ export default function EditorPage() {
                 onChange={(e) => dispatch(setInput(e.target.value))}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 className="flex-grow bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-lg shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                disabled={urls.length === 0 || loading}
+                disabled={urls.length === 0 || localLoading}
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || urls.length === 0 || loading}
+                disabled={!input.trim() || urls.length === 0 || localLoading}
                 className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-sm px-5 py-2.5 disabled:opacity-60"
                 title="Send Message"
               >
-                {loading ? (
+                {localLoading ? (
                   <Loader2Icon className="h-5 w-5 animate-spin" />
                 ) : (
                   <SendIcon className="h-5 w-5" />

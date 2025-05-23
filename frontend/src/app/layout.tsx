@@ -1,10 +1,8 @@
-"use client";
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Provider } from "react-redux";
-import { store } from "@/store";
+import { metadata as appMetadata } from "./metadata";
+import { ClientProviders } from "@/components/ClientProviders";
+import GlobalLoader from "@/components/GlobalLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,22 +14,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata = appMetadata;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <Provider store={store}>
-        <html lang="en">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-          >
-            {children}
-          </body>
-        </html>
-      </Provider>
-    </ClerkProvider>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+      >
+        <ClientProviders>
+          <GlobalLoader />
+          {children}
+        </ClientProviders>
+      </body>
+    </html>
   );
 }

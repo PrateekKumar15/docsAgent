@@ -146,9 +146,11 @@
   }
 
   .hero-visual-clip {
-    clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%);
+    clip-path: circle(45%);
+    @apply hover:animate-pulse;
   }
 }
+
 
 body {
   @apply bg-neutral-950 text-neutral-100;
