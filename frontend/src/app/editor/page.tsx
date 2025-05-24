@@ -255,7 +255,6 @@ export default function EditorPage() {
     dispatch(setInput(""));
 
     let accumulatedResponse = "";
-    let currentAiMessageId: string | null = null; // To update the AI message as it streams
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/chat", {
@@ -435,9 +434,7 @@ export default function EditorPage() {
       dispatch(
         setMessages(
           messages.map((msg, index) =>
-            index === messages.length
-              ? { ...msg, content: errorMessage }
-              : msg
+            index === messages.length ? { ...msg, content: errorMessage } : msg
           )
         )
       );
@@ -514,7 +511,7 @@ export default function EditorPage() {
           <Button
             variant="outline"
             onClick={handleNewChat}
-            className={`w-full text-neutral-300 border-purple-500/70 hover:bg-purple-500/10 hover:text-purple-300 transition-all duration-200 ease-in-out group ${
+            className={`w-full text-purple-900/100 bg-purple-200 border-purple-500/70 hover:bg-purple-500/10 hover:text-purple-300 transition-all duration-200 ease-in-out group ${
               !isSidebarOpen &&
               "aspect-square p-0 flex justify-center items-center"
             }`}
@@ -732,7 +729,9 @@ export default function EditorPage() {
                 onChange={(e) => setCurrentUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
                 className="flex-grow bg-neutral-800 border-neutral-700 text-neutral-200 placeholder:text-neutral-500 focus:border-purple-500 focus:ring-purple-500/50 rounded-md shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                disabled={localLoading || (!!selectedChatId && messages.length > 0)}
+                disabled={
+                  localLoading || (!!selectedChatId && messages.length > 0)
+                }
               />
               <Button
                 onClick={handleAddUrl}
@@ -771,7 +770,8 @@ export default function EditorPage() {
                       variant="ghost"
                       onClick={() => handleRemoveUrl(url)}
                       disabled={
-                        localLoading || (!!selectedChatId && messages.length > 0)
+                        localLoading ||
+                        (!!selectedChatId && messages.length > 0)
                       }
                       className="text-neutral-400 hover:text-red-400 hover:bg-red-500/10 h-7 w-7 disabled:opacity-50"
                       title="Remove URL"
@@ -881,7 +881,7 @@ export default function EditorPage() {
               <Button
                 onClick={handleSend}
                 disabled={!input.trim() || urls.length === 0 || localLoading}
-                className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-sm px-5 py-2.5 disabled:opacity-60"
+                className="bg-purple-600 hover:bg-purple-700 !cursor-pointer text-white rounded-lg shadow-sm px-5 py-2.5 disabled:opacity-60"
                 title="Send Message"
               >
                 {localLoading ? (

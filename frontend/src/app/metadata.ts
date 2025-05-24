@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
+const deployURL = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(deployURL),
   title: "AI Doc Agent | Instantly Ask Questions About Any Docs",
   description:
     "AI-powered SaaS to chat with any programming docs, libraries, or frameworks. Chat history, protected editor, and beautiful UI.",
@@ -22,7 +27,7 @@ export const metadata: Metadata = {
     title: "AI Doc Agent | Instantly Ask Questions About Any Docs",
     description:
       "AI-powered SaaS to chat with any programming docs, libraries, or frameworks. Chat history, protected editor, and beautiful UI.",
-    url: "https://yourdomain.com/",
+    url: deployURL,
     siteName: "AI Doc Agent",
     images: [
       {

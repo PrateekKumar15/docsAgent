@@ -13,7 +13,7 @@ export default function Footer() {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-500 hover:text-primary transition-colors duration-200"
+              className="text-gray-500 hover:bg-gray-700 p-2  rounded-full hover:text-gray-50 transition-colors duration-500"
             >
               <Twitter size={20} />
               <span className="sr-only">Twitter</span>
@@ -22,7 +22,7 @@ export default function Footer() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-500 hover:text-primary transition-colors duration-200"
+              className="text-gray-500 hover:bg-gray-700 p-2  rounded-full hover:text-gray-50 transition-colors duration-500"
             >
               <Github size={20} />
               <span className="sr-only">GitHub</span>
@@ -31,7 +31,7 @@ export default function Footer() {
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-500 hover:text-primary transition-colors duration-200"
+              className="text-gray-500 hover:bg-gray-700 p-2  rounded-full hover:text-gray-50 transition-colors duration-500"
             >
               <Linkedin size={20} />
               <span className="sr-only">LinkedIn</span>
@@ -40,7 +40,7 @@ export default function Footer() {
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-500 hover:text-primary transition-colors duration-200"
+              className="text-gray-500 hover:bg-gray-700 p-2  rounded-full hover:text-gray-50 transition-colors duration-500"
             >
               <Instagram size={20} />
               <span className="sr-only">Instagram</span>

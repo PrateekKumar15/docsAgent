@@ -11,14 +11,14 @@ export default function Contact() {
   return (
     <>
       <Navbar />
-      <main className="flex flex-col items-center justify-center flex-1 py-20 px-4 sm:px-6 lg:px-8 bg-neutral-950 text-neutral-100 min-h-screen">
+      <main className="flex flex-col  items-center justify-center flex-1 py-20 px-4 sm:px-6 lg:px-8 bg-neutral-950 text-neutral-100 min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="w-full max-w-xl"
         >
-          <Card className="p-8 sm:p-10 bg-neutral-900/80 border-neutral-700/60 shadow-xl rounded-xl flex flex-col items-center text-center">
+          <Card className="p-8 sm:p-10 m-10 bg-neutral-900/80 border-neutral-700/60 shadow-xl rounded-xl flex flex-col items-center text-center">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

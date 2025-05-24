@@ -63,7 +63,7 @@ export default function HowToUse() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-3xl"
         >
-          <Card className="p-8 sm:p-10 md:p-12 bg-neutral-900/80 border-neutral-700/60 shadow-xl rounded-xl flex flex-col items-center text-center">
+          <Card className="p-8 sm:p-10 md:p-12 bg-neutral-900/80 border-neutral-700/60 shadow-xl rounded-xl flex flex-col items-center text-center m-10">
             <motion.h1
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
